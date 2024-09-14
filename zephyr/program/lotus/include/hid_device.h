@@ -14,6 +14,7 @@
  */
 #define BUTTON_ID_BRIGHTNESS_INCREMENT 0x006F
 #define BUTTON_ID_BRIGHTNESS_DECREMENT 0x0070
+#define BUTTON_ID_KBLIGHT_TOGGLE       0x007C
 
 void hid_consumer(uint16_t  id, bool pressed);
 void hid_airplane(bool pressed);

@@ -415,6 +415,8 @@ int functional_hotkey(uint16_t *key_code, int8_t pressed)
 		break;
 	case SCANCODE_SPACE:	/* TODO: TOGGLE_KEYBOARD_BACKLIGHT */
 		if (fn_table_set(pressed, KB_FN_SPACE)) {
+			hid_consumer(BUTTON_ID_KBLIGHT_TOGGLE, pressed);
+			/*
 			if (pressed) {
 				bl_brightness = kblight_get();
 				switch (bl_brightness) {
@@ -434,6 +436,7 @@ int functional_hotkey(uint16_t *key_code, int8_t pressed)
 				}
 				kblight_set(bl_brightness);
 			}
+			*/
 			/* we dont want to pass the space key event to the OS */
 			return EC_ERROR_UNIMPLEMENTED;
 		}
