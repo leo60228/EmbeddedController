@@ -56,6 +56,7 @@ LOG_MODULE_REGISTER(hid_target);
 #define REPORT_ID_RADIO		0x01
 #define REPORT_ID_CONSUMER	0x02
 #define REPORT_ID_SENSOR	0x03
+#define REPORT_ID_DISPLAY	0x04
 
 #define ALS_REPORT_STOP		0x00
 #define ALS_REPORT_POLLING	0x01
@@ -150,11 +151,15 @@ struct als_feature_report {
 	uint16_t minimum;
 } __packed;
 
+struct display_report {
+	uint8_t state;
+} __packed;
 
 #ifdef CONFIG_BOARD_AZALEA
 
 static struct radio_report radio_button;
 static struct consumer_button_report consumer_button;
+static struct display_report display_button;
 /* HID input report descriptor
  *
  * For a complete reference, please see the following docs on usb.org
@@ -191,6 +196,21 @@ static const uint8_t keyboard_report_desc[] = {
 	0x75, 0x10,		/* Report Size (16) */
 	0x95, 0x01,		/* Report Count (1) */
 	0x81, 0x00,		/* Input (Data,Arr,Abs) */
+	0xC0,			/* END_COLLECTION */
+
+	/* Display Toggle Collection */
+	0x05, 0x01,		/* USAGE_PAGE (Generic Desktop) */
+	0x09, 0x80,		/* USAGE (System Control) */
+	0xA1, 0x01,		/* COLLECTION (Application) */
+	0x85, REPORT_ID_DISPLAY,	/* Report ID (Display) */
+	0x15, 0x00,		/* LOGICAL_MINIMUM (0) */
+	0x25, 0x01,		/* LOGICAL_MAXIMUM (1) */
+	0x09, 0xB5,		/* USAGE (System Display Toggle Int/Ext Mode) */
+	0x95, 0x01,		/* REPORT_COUNT (1) */
+	0x75, 0x01,		/* REPORT_SIZE (1) */
+	0x81, 0x06,		/* INPUT (Data,Var,Rel) */
+	0x75, 0x07,		/* REPORT_SIZE (7) */
+	0x81, 0x03,		/* INPUT (Cnst,Var,Abs) */
 	0xC0,			/* END_COLLECTION */
 };
 
@@ -443,6 +463,16 @@ void hid_airplane(bool pressed)
 	if (pressed)
 		irq_keyboard();
 }
+void hid_display(bool pressed)
+{
+	const struct device *dev = DEVICE_DT_GET(DT_NODELABEL(i2chid0));
+	struct i2c_hid_target_data *data = dev->data;
+
+	data->report_id = REPORT_ID_DISPLAY;
+	display_button.state = pressed;
+	if (pressed)
+		irq_keyboard();
+}
 #endif
 
 
@@ -637,6 +667,11 @@ static int hid_target_process_write(struct i2c_target_config *config)
 							&consumer_button,
 							sizeof(struct consumer_button_report));
 				break;
+			case REPORT_ID_DISPLAY:
+					response_size = fill_report(data->buffer, report_id,
+							&display_button,
+							sizeof(struct display_report));
+				break;
 	#endif
 			case REPORT_ID_SENSOR:
 				if (report_type == 0x01) {
@@ -791,6 +826,11 @@ static int hid_target_read_requested(struct i2c_target_config *config,
 			fill_report(data->buffer, REPORT_ID_CONSUMER,
 					&consumer_button,
 					sizeof(struct consumer_button_report));
+			break;
+		case REPORT_ID_DISPLAY:
+			fill_report(data->buffer, REPORT_ID_DISPLAY,
+					&display_button,
+					sizeof(struct display_report));
 			break;
 #endif
 		case REPORT_ID_SENSOR:

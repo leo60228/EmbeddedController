@@ -18,6 +18,7 @@
 
 void hid_consumer(uint16_t  id, bool pressed);
 void hid_airplane(bool pressed);
+void hid_display(bool pressed);
 
 int hid_target_register(const struct device *dev);
 

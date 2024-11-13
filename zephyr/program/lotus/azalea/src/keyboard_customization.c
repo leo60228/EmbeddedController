@@ -295,13 +295,7 @@ int hotkey_F1_F12(uint16_t *key_code, uint16_t fn, int8_t pressed)
 		break;
 	case SCANCODE_F9:  /* EXTERNAL_DISPLAY */
 		if (fn_table_media_set(pressed, KB_FN_F9)) {
-			if (pressed) {
-				simulate_keyboard(SCANCODE_LEFT_WIN, 1);
-				simulate_keyboard(SCANCODE_P, 1);
-			} else {
-				simulate_keyboard(SCANCODE_P, 0);
-				simulate_keyboard(SCANCODE_LEFT_WIN, 0);
-			}
+			hid_display(pressed);
 			return EC_ERROR_UNIMPLEMENTED;
 		}
 		break;
